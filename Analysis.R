@@ -2,6 +2,8 @@
 # March 20, 2020
 setwd("~/Documents/GitRepos/CNH-perspectives")
 
+# setwd("C:/Users/Megan/Google Drive/CNH_perspectives")
+
 library(dplyr)
 library(tidyverse)
 library(quanteda)
@@ -16,6 +18,7 @@ library(vegan)
 
 grants<- read.csv('Grants_toTrack.csv')
 pubs<- read.csv('PublicationTracker_0422.csv')
+journals <- read.csv('SubsetJournals_4Jun20.csv')
 
 grant_sum<-grants %>% group_by(Grant.Searched) %>% summarize(count=n())
 
@@ -57,3 +60,10 @@ dis<-rquery.wordcloud(pubs$Publication.Title[pubs$Rubric.2..original. ==3], type
 quartz.save("test2.pdf", type="pdf")
 
 freqTable_dis <- dis$freqTable
+
+## I can't get this to write out with this code, but I can manually save
+journ.all <- rquery.wordcloud(journals$Stated.aims.scope, type = "text", lang = "english", excludeWords = c("and", "the"), min.freq = 3,  max.words = 500)
+
+journ.inter <- rquery.wordcloud(subset(journals, Gutcheck.Interdisciplinary. == "Y" | Gutcheck.Interdisciplinary. == "kinda")$Stated.aims.scope, type = "text", lang = "english", excludeWords = c("and", "the"), min.freq = 3,  max.words = 500)
+
+journ.CNHS <- rquery.wordcloud(subset(journals, Gutcheck.CNHS. == "Y" | Gutcheck.CNHS. == "kinda")$Stated.aims.scope, type = "text", lang = "english", excludeWords = c("and", "the"), min.freq = 3,  max.words = 500)
