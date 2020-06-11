@@ -18,7 +18,7 @@ library(vegan)
 
 grants<- read.csv('Grants_toTrack.csv')
 pubs<- read.csv('PublicationTracker_0422.csv')
-journals <- read.csv('SubsetJournals_4Jun20.csv')
+journals <- read.csv('SubsetJournals_11Jun20.csv')
 
 grant_sum<-grants %>% group_by(Grant.Searched) %>% summarize(count=n())
 
