@@ -43,6 +43,20 @@ for (i in 1:length(grant_ids)) {
 }
 
 hist(grant_deets$sdi, plot = T, xlab = "Shannon Diversity Index of Rubric for Each Grant", main='')
+
+
+## journal bar charts - maybe we'll want to reference journals with a number and then give their names in a table?
+# bar color = CHANS
+ggplot(journals, aes(x = reorder(journal, -number.of.papers), y = number.of.papers, fill = Mission.includes.humans.social.)) +
+  geom_bar(stat = "identity") 
+
+# bar color = interdisciplinary
+ggplot(journals, aes(x = reorder(journal, -number.of.papers), y = number.of.papers, fill = Mission.includes.interdisciplinary.)) +
+  geom_bar(stat = "identity") 
+  
+
+
+
 ## --- Word Cloud
 
 source('http://www.sthda.com/upload/rquery_wordcloud.r')
