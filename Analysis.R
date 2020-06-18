@@ -7,6 +7,7 @@ setwd("~/Documents/GitRepos/CNH-perspectives")
 library(dplyr)
 library(tidyverse)
 library(quanteda)
+library(ggplot2)
 #packages for word cloud
 library(tm)
 library(SnowballC)
