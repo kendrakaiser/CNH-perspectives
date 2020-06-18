@@ -17,7 +17,7 @@ library(XML)
 library(vegan)
 
 grants<- read.csv('Grants_toTrack.csv')
-pubs<- read.csv('PublicationTracker_0422.csv')
+pubs<- read.csv('PublicationTracker_0618.csv')
 journals <- read.csv('SubsetJournals_11Jun20.csv')
 
 grant_sum<-grants %>% group_by(Grant.Searched) %>% summarize(count=n())
@@ -43,6 +43,19 @@ for (i in 1:length(grant_ids)) {
 }
 
 hist(grant_deets$sdi, plot = T, xlab = "Shannon Diversity Index of Rubric for Each Grant", main='')
+
+## citations by paper for different interdisciplinarity levels
+# histogram version
+ggplot(pubs, aes(Citations)) +
+  geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 1), fill = "red", alpha = 0.2) +
+  geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 2), fill = "green", alpha = 0.2) +
+  geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 3), fill = "blue", alpha = 0.2) 
+#desity plot version
+ggplot(pubs, aes(Citations)) +
+  geom_density(data=filter(pubs, check.of.Rubric.2.score == 3), colour = "#0400ff50", size = 1.5) +
+  geom_density(data=filter(pubs, check.of.Rubric.2.score == 2), colour = "#33ff0050", size = 1.5) +
+  geom_density(data=filter(pubs, check.of.Rubric.2.score == 1), colour = "#ff000050", size = 1.5) 
+### not sure either of these are great - maybe three panels is better? or maybe
 
 
 ## journal bar charts - maybe we'll want to reference journals with a number and then give their names in a table?
