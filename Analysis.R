@@ -44,18 +44,31 @@ for (i in 1:length(grant_ids)) {
 
 hist(grant_deets$sdi, plot = T, xlab = "Shannon Diversity Index of Rubric for Each Grant", main='')
 
-## citations by paper for different interdisciplinarity levels
+
+#################################################################
+## citations by paper for different interdisciplinarity levels ##
+#################################################################
+# double check name for "check.of.Rubric2.score"
 # histogram version
 ggplot(pubs, aes(Citations)) +
   geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 1), fill = "red", alpha = 0.2) +
-  geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 2), fill = "green", alpha = 0.2) +
+  #geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 2), fill = "green", alpha = 0.2) +
   geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 3), fill = "blue", alpha = 0.2) 
+
 #desity plot version
 ggplot(pubs, aes(Citations)) +
   geom_density(data=filter(pubs, check.of.Rubric.2.score == 3), colour = "#0400ff50", size = 1.5) +
   geom_density(data=filter(pubs, check.of.Rubric.2.score == 2), colour = "#33ff0050", size = 1.5) +
   geom_density(data=filter(pubs, check.of.Rubric.2.score == 1), colour = "#ff000050", size = 1.5) 
-### not sure either of these are great - maybe three panels is better? or maybe
+
+# violin plot version
+dplyr::filter(pubs, is.na(check.of.Rubric.2.score)==F) %>% 
+ggplot(aes(x=as.factor(check.of.Rubric.2.score),y=Citations)) +
+  geom_violin()
+  
+Cite.by.interdiscip.aov <- aov(log(Citations+1)~as.factor(check.of.Rubric.2.score), data=pubs)
+summary(Cite.by.interdiscip.aov)
+TukeyHSD(Cite.by.interdiscip.aov)
 
 
 ## journal bar charts - maybe we'll want to reference journals with a number and then give their names in a table?
