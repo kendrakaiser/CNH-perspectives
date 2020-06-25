@@ -65,7 +65,7 @@ ggplot(pubs, aes(Citations)) +
 dplyr::filter(pubs, is.na(check.of.Rubric.2.score)==F) %>% 
 ggplot(aes(x=as.factor(check.of.Rubric.2.score),y=Citations)) +
   geom_violin()
-  
+#ANOVA  
 Cite.by.interdiscip.aov <- aov(log(Citations+1)~as.factor(check.of.Rubric.2.score), data=pubs)
 summary(Cite.by.interdiscip.aov)
 TukeyHSD(Cite.by.interdiscip.aov)
