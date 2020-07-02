@@ -1,6 +1,6 @@
 ## Analysis of interdisciplinary proposals 
 # March 20, 2020
-#setwd("~/Documents/GitRepos/CNH-perspectives")
+setwd("~/Documents/GitRepos/CNH-perspectives")
 
 # setwd("C:/Users/Megan/Google Drive/CNH_perspectives")
 
@@ -17,8 +17,8 @@ library(RCurl)
 library(XML)
 library(vegan)
 
-grants<- read.csv('Grants_toTrack.csv')
-pubs<- read.csv('PublicationTracker_0618.csv')
+grants<- read.csv('Grants_toTrack_0702.csv')
+pubs<- read.csv('PublicationTracker_0702.csv')
 journals <- read.csv('SubsetJournals_11Jun20.csv')
 
 grant_sum<-grants %>% group_by(Grant.Searched) %>% summarize(count=n())
@@ -60,20 +60,24 @@ pubs$Journal<-as.character(pubs$Journal)
 pubs$Journal<-char_tolower(pubs$Journal)
 pub_sum<- pubs %>% group_by(Journal) %>% summarize(count=n()) 
 
-rub_sum<- pubs %>% group_by(Rubric1_OG) %>% summarize(count=n()) 
-rub_sum_v2<- pubs %>% group_by(Rubric2) %>% summarize(count=n()) 
+rub_sum<- pubs %>% group_by(CNH.Rubric.2) %>% summarize(count=n()) 
+rub_sum_v2<- pubs %>% group_by(Interdis.Rubric.1) %>% summarize(count=n()) 
 
 grant_ids <- unique(pubs$Grant.Number)
 grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi'=-1)
-pubs
+grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi_CNH'=-1, 'sdi_interdisc'=-1)
+
 
 for (i in 1:length(grant_ids)) {
   if (length(pubs$Publication.Year[pubs$Grant.Number == grant_ids[i]]) > 2){
-    sdi <- diversity(pubs$Rubric2[pubs$Grant.Number == grant_ids[i]], index="shannon")
-  } else {sdi = NA}
-  grant_deets$sdi[i] <- sdi
+    grant_deets$sdi_CNH[i] <- diversity(pubs$CNH.Rubric.2[pubs$Grant.Number == grant_ids[i]], index="shannon")
+    grant_deets$sdi_interdisc[i] <- diversity(pubs$Interdis.Rubric.1[pubs$Grant.Number == grant_ids[i]], index="shannon")
+  } else {grant_deets$sdi_CNH[i] <-NA
+         grant_deets$sdi_interdisc[i] <-NA
+  }
 }
 
+grants<- grants %>% left_join(grant_deets)
 hist(grant_deets$sdi, plot = T, xlab = "Shannon Diversity Index of Rubric for Each Grant", main='')
 
 
@@ -83,22 +87,22 @@ hist(grant_deets$sdi, plot = T, xlab = "Shannon Diversity Index of Rubric for Ea
 # double check name for "check.of.Rubric2.score"
 # histogram version
 ggplot(pubs, aes(Citations)) +
-  geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 1), fill = "red", alpha = 0.2) +
-  #geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 2), fill = "green", alpha = 0.2) +
-  geom_histogram(data=filter(pubs, check.of.Rubric.2.score == 3), fill = "blue", alpha = 0.2) 
+  geom_histogram(data=filter(pubs, CNH.Rubric.2 == 1), fill = "red", alpha = 0.2) +
+  #geom_histogram(data=filter(pubs, CNH.Rubric.2 == 2), fill = "green", alpha = 0.2) +
+  geom_histogram(data=filter(pubs, CNH.Rubric.2 == 3), fill = "blue", alpha = 0.2) 
 
 #desity plot version
 ggplot(pubs, aes(Citations)) +
-  geom_density(data=filter(pubs, check.of.Rubric.2.score == 3), colour = "#0400ff50", size = 1.5) +
-  geom_density(data=filter(pubs, check.of.Rubric.2.score == 2), colour = "#33ff0050", size = 1.5) +
-  geom_density(data=filter(pubs, check.of.Rubric.2.score == 1), colour = "#ff000050", size = 1.5) 
+  geom_density(data=filter(pubs, CNH.Rubric.2 == 3), colour = "#0400ff50", size = 1.5) +
+  geom_density(data=filter(pubs, CNH.Rubric.2 == 2), colour = "#33ff0050", size = 1.5) +
+  geom_density(data=filter(pubs, CNH.Rubric.2 == 1), colour = "#ff000050", size = 1.5) 
 
 # violin plot version
-dplyr::filter(pubs, is.na(check.of.Rubric.2.score)==F) %>% 
-ggplot(aes(x=as.factor(check.of.Rubric.2.score),y=Citations)) +
+dplyr::filter(pubs, is.na(CNH.Rubric.2)==F) %>% 
+ggplot(aes(x=as.factor(CNH.Rubric.2),y=Citations)) +
   geom_violin()
 #ANOVA  
-Cite.by.interdiscip.aov <- aov(log(Citations+1)~as.factor(check.of.Rubric.2.score), data=pubs)
+Cite.by.interdiscip.aov <- aov(log(Citations+1)~as.factor(CNH.Rubric.2), data=pubs)
 summary(Cite.by.interdiscip.aov)
 TukeyHSD(Cite.by.interdiscip.aov)
 
