@@ -24,7 +24,10 @@ journals <- read.csv('SubsetJournals_11Jun20.csv')
 grant_sum<-grants %>% group_by(Grant.Searched) %>% summarize(count=n())
 
 
+#################################################################
 #Bar chart of all grants pulled
+#################################################################
+
 p <- ggplot(grants)+ geom_bar(aes(x=Grant.Searched)) 
 t <- p + labs(x = "Grant Program", y ="Number of Grants Found" ) +
   
@@ -49,6 +52,9 @@ ggsave(filename= "Figures/Grants_searched_barchart.pdf", t, width=10, height=8)
 # this should be re-done to show as a percentage of grants in the dimensions results (with dates 2000-2015 - I orginially had done this manually, but we should probably write another script to do this and remove duplicate titles from Collaborative proposals)
 
 
+#################################################################
+## Diversity Index - Shannon - Analysis 
+
 
 pubs$Journal<-as.character(pubs$Journal) 
 pubs$Journal<-char_tolower(pubs$Journal)
@@ -59,6 +65,7 @@ rub_sum_v2<- pubs %>% group_by(Rubric2) %>% summarize(count=n())
 
 grant_ids <- unique(pubs$Grant.Number)
 grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi'=-1)
+pubs
 
 for (i in 1:length(grant_ids)) {
   if (length(pubs$Publication.Year[pubs$Grant.Number == grant_ids[i]]) > 2){
@@ -135,8 +142,10 @@ journ.CNHS <- rquery.wordcloud(subset(journals, Gutcheck.CNHS. == "Y" | Gutcheck
 
 
 
-
+#################################################################
 #GRANTS by number of papers and dollar amount
+#################################################################
+
 grants$Number.of.Papers <- as.numeric(grants$Number.of.Papers)
 
 df <- grants %>%
@@ -182,11 +191,20 @@ t
 ggsave(filename= "Figures/Grants_fundingamount_columnchart.pdf", t, width=10, height=8)
 
 
-### CODE FOR MOSAIC PLOT - need different data
+#################################################################
+### CODE FOR MOSAIC PLOT - need different data and to figure it out!
+#################################################################
+
+PubCount <- pubs %>%
+  group_by(Rubric1_OG_check, Rubric2) %>%
+  count() 
+
+PubCount <- na.omit(PubCount)
+
 library(ggmosaic)
 
-ggplot(data = df) +
-  geom_mosaic(aes(x = product(Grant.Searched), weight = count, fill = numberpaper), na.rm=TRUE) +
+ggplot(data = PubCount) +
+  geom_mosaic(aes(x = product(Rubric1_OG_check), weight = Rubric2, fill = n), na.rm=TRUE) +
   labs(x="Hours of sleep a night ", title='f(SleepHrsNight)') + guides(fill=guide_legend(title = "SleepHrsNight", reverse = TRUE))
 
 df$numberpaper <- as.numeric(grants$Number.of.Papers)
