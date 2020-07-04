@@ -124,6 +124,26 @@ t <- p + labs(x = "Shannon Diversity for CNH ", y ="Count of Grants" ) +
 t
 ggsave(filename= "Figures/Histo_Shannon_CHN_grantprogram.pdf", t, width=10, height=8)
 
+p <- ggplot(grants_subset, aes(x=sdi_CNH))+
+  geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "yellow3", fill = "yellow3", size = 1) + 
+  geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "forestgreen", fill = "forestgreen", alpha = 0.3, size = 2)+
+  geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "navy", fill = "navy", alpha = 0.3, size = 1) 
+t <- p + labs(x = "Shannon Diversity for CNH ", y ="Density of Grants" ) +
+  
+  theme(
+    panel.background = element_rect(fill = 'white', colour = 'black'),
+    axis.text = element_text(size = 18),
+    axis.text.x = element_text(colour = "gray30"),
+    axis.text.y = element_text(colour = "gray30"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title.x = element_text(size =20),
+    axis.title.y = element_text(size =18), 
+    legend.position = c(.95, .95),)
+t
+ggsave(filename= "Figures/Density_Shannon_CHN_grantprogram.pdf", t, width=10, height=8)
+
+
 #### shannon diversity by funding 
 ### WHAT UNIT ARE THESE FUNDING AMOUNTS IN?
 grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
