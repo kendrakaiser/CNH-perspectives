@@ -103,7 +103,7 @@ ggsave(filename= "Figures/Histo_Shannon_CHN.pdf", t, width=10, height=8)
 
 #histogram for diversity by grant program
 grants <- rename(grants, "GrantingProgram" = "ï..Grant.Searched")
-grants_subset <- subset(grants, grants$GrantingProgram == c("ES", "BE-CNH", "GEO-CHN"))
+
 
 p <- ggplot(grants_subset, aes(x=sdi_CNH))+
   geom_histogram(data=subset(grants, grants$GrantingProgram == "ES"), binwidth = 0.1, colour = "yellow3", fill = "yellow3", size = 1) + 
@@ -124,10 +124,12 @@ t <- p + labs(x = "Shannon Diversity for CNH ", y ="Count of Grants" ) +
 t
 ggsave(filename= "Figures/Histo_Shannon_CHN_grantprogram.pdf", t, width=10, height=8)
 
-p <- ggplot(grants_subset, aes(x=sdi_CNH))+
-  geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "yellow3", fill = "yellow3", size = 1) + 
-  geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "forestgreen", fill = "forestgreen", alpha = 0.3, size = 2)+
-  geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "navy", fill = "navy", alpha = 0.3, size = 1) 
+p <- ggplot(grants, aes(x=sdi_CNH))+
+  geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
+  geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
+  geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
+  geom_density(data=subset(grants, grants$GrantingProgram == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
+  geom_density(data=grants_subset, colour = "black",  alpha = 0, size = 2) 
 t <- p + labs(x = "Shannon Diversity for CNH ", y ="Density of Grants" ) +
   
   theme(
@@ -141,7 +143,29 @@ t <- p + labs(x = "Shannon Diversity for CNH ", y ="Density of Grants" ) +
     axis.title.y = element_text(size =18), 
     legend.position = c(.95, .95),)
 t
-ggsave(filename= "Figures/Density_Shannon_CHN_grantprogram.pdf", t, width=10, height=8)
+ggsave(filename= "Figures/Density_Shannon_CHN_grantprogram_7.9.20.pdf", t, width=10, height=8)
+
+
+p <- ggplot(grants, aes(x=sdi_interdisc))+
+  geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
+  geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
+  geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
+  geom_density(data=subset(grants, grants$GrantingProgram == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
+  geom_density(data=grants_subset, colour = "black",  alpha = 0, size = 2) 
+t <- p + labs(x = "Shannon Diversity for Interdisciplinary ", y ="Density of Grants" ) +
+  
+  theme(
+    panel.background = element_rect(fill = 'white', colour = 'black'),
+    axis.text = element_text(size = 18),
+    axis.text.x = element_text(colour = "gray30"),
+    axis.text.y = element_text(colour = "gray30"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title.x = element_text(size =20),
+    axis.title.y = element_text(size =18), 
+    legend.position = c(.95, .95),)
+t
+ggsave(filename= "Figures/Density_Shannon_Interdis_grantprogram_7.9.20.pdf", t, width=10, height=8)
 
 
 #### shannon diversity by funding 
