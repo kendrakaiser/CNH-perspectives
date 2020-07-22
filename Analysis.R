@@ -8,6 +8,7 @@ library(dplyr)
 library(tidyverse)
 library(quanteda)
 library(ggplot2)
+library(viridis)
 #packages for word cloud
 library(tm)
 library(SnowballC)
@@ -17,9 +18,9 @@ library(RCurl)
 library(XML)
 library(vegan)
 
-grants<- read.csv('Grants_toTrack_0702.csv')
-pubs<- read.csv('PublicationTracker_0702.csv')
-journals <- read.csv('SubsetJournals_11Jun20.csv')
+grants<- read.csv('Grants.csv')
+pubs<- read.csv('Publications.csv')
+journals <- read.csv('Journals.csv')
 
 grant_sum<-grants %>% group_by(Grant.Searched) %>% summarize(count=n())
 
@@ -203,15 +204,26 @@ ggplot(pubs, aes(Citations)) +
   geom_density(data=filter(pubs, CNH.Rubric.2 == 2), colour = "#33ff0050", size = 1.5) +
   geom_density(data=filter(pubs, CNH.Rubric.2 == 1), colour = "#ff000050", size = 1.5) 
 
-# violin plot version
-dplyr::filter(pubs, is.na(CNH.Rubric.2)==F) %>% 
-ggplot(aes(x=as.factor(CNH.Rubric.2),y=Citations)) +
-  geom_violin()
+# violin plot version - BROKEN INTO CNH vs non CNH
+CNH.citations <- filter(left_join(pubs, grants[c("ï..Grant.Searched","Grant.ID")], by = c("ï..Grant.ID" = "Grant.ID")), ï..Grant.Searched == "Hydrology" | ï..Grant.Searched == "ES" | ï..Grant.Searched == "BE-CNH" | ï..Grant.Searched == "GEO-CHN")
+CNH.citations$program.group <- NA
+
+dplyr::filter(CNH.citations, is.na(CNH.Rubric.2)==F) %>% 
+ggplot(aes(x=as.factor(CNH.Rubric.2),y = Citations, fill = ï..Grant.Searched)) +
+  geom_violin(position="dodge", alpha=0.5) +
+  scale_fill_viridis(discrete=T, name="") +
+  xlab("") +
+  ylab("Citations")
+
 #ANOVA  
 Cite.by.interdiscip.aov <- aov(log(Citations+1)~as.factor(CNH.Rubric.2), data=pubs)
 summary(Cite.by.interdiscip.aov)
 TukeyHSD(Cite.by.interdiscip.aov)
 
+
+######################################################
+### Info about journals where things are published ###
+######################################################
 
 ## journal bar charts - maybe we'll want to reference journals with a number and then give their names in a table?
 # bar color = CHANS
@@ -221,8 +233,14 @@ ggplot(journals, aes(x = reorder(journal, -number.of.papers), y = number.of.pape
 # bar color = interdisciplinary
 ggplot(journals, aes(x = reorder(journal, -number.of.papers), y = number.of.papers, fill = Mission.includes.interdisciplinary.)) +
   geom_bar(stat = "identity") 
-  
+# JUST KIDDING - We'll just report this as text in the paper
+popular.journals <- filter(journals, number.of.papers >=5)  
+# percents with aims & scope including interdisciplinary:
+pop.interdis <- nrow(filter(popular.journals, Mission.includes.interdisciplinary. == "Y" | Mission.includes.interdisciplinary. == "I"))/nrow(popular.journals)
+all.interdis <- nrow(filter(journals, Mission.includes.interdisciplinary. == "Y" | Mission.includes.interdisciplinary. == "I"))/56
 
+pop.humans <- nrow(filter(popular.journals, Mission.includes.humans.social. == "Y" | Mission.includes.humans.social. == "I"))/nrow(popular.journals)
+all.humans <- nrow(filter(journals, Mission.includes.humans.social. == "Y" | Mission.includes.humans.social. == "I"))/56
 
 
 ## --- Word Cloud
