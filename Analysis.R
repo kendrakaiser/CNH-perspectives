@@ -22,7 +22,8 @@ grants<- read.csv('Grants.csv')
 pubs<- read.csv('Publications.csv')
 journals <- read.csv('Journals.csv')
 
-grant_sum<-grants %>% group_by(Grant.Searched) %>% summarize(count=n())
+names(grants)[1] <- "Grant.Searched"
+grant_sum <- grants %>% group_by(Grant.Searched) %>% summarize(count=n())
 
 
 #################################################################
@@ -280,6 +281,7 @@ df <- grants %>%
   group_by(Grant.Searched) %>%
   summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount))
 
+
 ## COLUMN plot
 df<-subset(df, Grant.Searched != "")
 p <- ggplot(data = df) +
@@ -318,7 +320,51 @@ t <- p + labs(x = "Grant Program", y ="Number of Grants" ) +
 t
 ggsave(filename= "Figures/Grants_fundingamount_columnchart.pdf", t, width=10, height=8)
 
+#### For a all grants 
+p <- ggplot(data = grants) +
+  geom_point(aes(x = Funding.Amount, y= log10(Number.of.Papers), colour = Grant.Searched, fill = Grant.Searched), size = 2) 
+p <- p + theme(panel.background = element_rect(fill = 'white', colour = 'black'))
+t <- p + labs(x = "Funding Amount", y ="log(Number of Papers)" ) +
+  theme(
+    panel.background = element_rect(fill = 'white', colour = 'black'),
+    axis.text = element_text(size = 18),
+    axis.text.x = element_text(colour = "gray30", size =10),
+    axis.text.y = element_text(colour = "gray30"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title.x = element_text(size =20),
+    axis.title.y = element_text(size =18))+
+  scale_fill_gradientn(colours=c("green3", "grey50", "dodgerblue", "navy", "darkcyan", "yellow4", "black")) #"green4","olivedrab3", "darkorange1",))   #"cyan3", "yellow4")"green3", "grey50"  #"dodgerblue", "navy" #"darkcyan", "yellow4", "black" #"green4","olivedrab3", "darkorange1", # "red","navy", "dodgerblue" #"darkorchid4","lightskyblue4", "black"
+t
+ggsave(filename= "Figures/FundingAmount_vs_Papers.pdf", t, width=10, height=8)
 
+
+
+#########################################################
+######### Data for tables ##############################
+#######################################################
+
+#for total funding and papers across 
+grants$Number.of.Papers <- as.numeric(grants$Number.of.Papers)
+grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
+
+df <- grants %>%
+  group_by(Grant.Searched) %>%
+  summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount))
+
+df_grantpubs <- left_join(grants, grant_deets, by= "Grant.Number")
+df_grantpubs$SDICNH_cat <- cut(df_grantpubs$sdi_CNH, c(0, 1, 2, 3))
+df_grantpubs$SDIInt_cat <- cut(df_grantpubs$sdi_interdisc, c(0, 1, 2, 3))
+#df_grantpubs[is.na(df_grantpubs)] = 0
+df_grantpubs <- na.omit(df_grantpubs)
+
+grantpubsCH <- df_grantpubs %>%
+  group_by(Grant.Searched, SDICNH_cat) %>%
+  tally()
+
+grantpubsIN <- df_grantpubs %>%
+  group_by(Grant.Searched, SDIInt_cat) %>%
+  tally()
 #################################################################
 ### CODE FOR MOSAIC PLOT - need different data and to figure it out!
 #################################################################
