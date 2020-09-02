@@ -68,6 +68,7 @@ rub_sum<- pubs %>% group_by(CNH.Rubric.2) %>% summarize(count=n())
 rub_sum_v2<- pubs %>% group_by(Interdis.Rubric.1) %>% summarize(count=n()) 
 
 pubs$X <- NULL
+pubs <- pubs[, -c(14:29)] 
 pubs <- na.omit(pubs) 
 grant_ids <- unique(pubs$Grant.Number)
 grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi'=-1)
@@ -106,8 +107,7 @@ ggsave(filename= "Figures/Histo_Shannon_CHN.pdf", t, width=10, height=8)
 
 
 #histogram for diversity by grant program
-grants <- rename(grants, "GrantingProgram" = "ï..Grant.Searched")
-
+grants <- rename(grants, "GrantingProgram" = "Grant.Searched")
 
 p <- ggplot(grants_subset, aes(x=sdi_CNH))+
   geom_histogram(data=subset(grants, grants$GrantingProgram == "ES"), binwidth = 0.1, colour = "yellow3", fill = "yellow3", size = 1) + 
@@ -267,7 +267,7 @@ df <- grants %>%
   group_by(Grant.Searched) %>%
   summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount), 
             MeanFunding = mean(Funding.Amount), MeanNumPapers = mean(Number.of.Papers))
-
+df <- t
 
 ## COLUMN plot
 # df<-subset(df, Grant.Searched != "")
@@ -339,7 +339,6 @@ data <- Pubgrants %>%
   group_by(Grant.Searched) %>%
   summarise(count = n(), Citations = sum(Citations))
 data <- transform(data, CitationsPerPaper = (Citations/count))
-
 
   
   p <- ggplot(data = data) +
