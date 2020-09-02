@@ -109,7 +109,7 @@ ggsave(filename= "Figures/Histo_Shannon_CHN.pdf", t, width=10, height=8)
 #histogram for diversity by grant program
 grants <- rename(grants, "GrantingProgram" = "Grant.Searched")
 
-p <- ggplot(grants_subset, aes(x=sdi_CNH))+
+p <- ggplot(grants, aes(x=sdi_CNH))+
   geom_histogram(data=subset(grants, grants$GrantingProgram == "ES"), binwidth = 0.1, colour = "yellow3", fill = "yellow3", size = 1) + 
   geom_histogram(data=subset(grants, grants$GrantingProgram == "BE-CNH"),binwidth = 0.1, colour = "forestgreen", fill = "forestgreen", alpha = 0.3, size = 2)+
   geom_histogram(data=subset(grants, grants$GrantingProgram == "GEO-CHN"),binwidth = 0.1, colour = "navy", fill = "navy", alpha = 0.3, size = 1) 
@@ -133,7 +133,7 @@ p <- ggplot(grants, aes(x=sdi_CNH))+
   geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
   geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
   geom_density(data=subset(grants, grants$GrantingProgram == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
-  geom_density(data=grants_subset, colour = "black",  alpha = 0, size = 2) 
+  geom_density(data=grants, colour = "black",  alpha = 0, size = 2) 
 t <- p + labs(x = "Shannon Diversity for CNH ", y ="Density of Grants" ) +
   
   theme(
@@ -155,7 +155,7 @@ p <- ggplot(grants, aes(x=sdi_interdisc))+
   geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
   geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
   geom_density(data=subset(grants, grants$GrantingProgram == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
-  geom_density(data=grants_subset, colour = "black",  alpha = 0, size = 2) 
+  geom_density(data=grants, colour = "black",  alpha = 0, size = 2) 
 t <- p + labs(x = "Shannon Diversity for Interdisciplinary ", y ="Density of Grants" ) +
   
   theme(
@@ -379,19 +379,25 @@ grants$Number.of.Papers <- as.numeric(grants$Number.of.Papers)
 grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
 
 df <- grants %>%
-  group_by(Grant.Searched) %>%
+  group_by(GrantingProgram) %>%
   summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount))
 
 df_grantpubs <- left_join(grants, grant_deets, by= "Grant.Number")
+
+df_grantpubs <- rename(df_grantpubs, "sdi_CNH" = "sdi_CNH.x")
+df_grantpubs <- rename(df_grantpubs, "sdi_interdisc" = "sdi_interdisc.x")
+df_grantpubs$sdi_CNH <- as.numeric(df_grantpubs$sdi_CNH)
+df_grantpubs$sdi_interdisc <- as.numeric(df_grantpubs$sdi_interdisc)
 df_grantpubs$SDICNH_cat <- cut(df_grantpubs$sdi_CNH, c(0, 1, 2, 3))
 df_grantpubs$SDIInt_cat <- cut(df_grantpubs$sdi_interdisc, c(0, 1, 2, 3))
+
 #df_grantpubs[is.na(df_grantpubs)] = 0
-df_grantpubs <- na.omit(df_grantpubs)
+df_grantpubs<-subset(df_grantpubs, df_grantpubs$sdi_CNH != "NA")
 
 grantpubsCH <- df_grantpubs %>%
-  group_by(Grant.Searched, SDICNH_cat) %>%
+  group_by(GrantingProgram, SDICNH_cat) %>%
   tally()
 
 grantpubsIN <- df_grantpubs %>%
-  group_by(Grant.Searched, SDIInt_cat) %>%
+  group_by(GrantingProgram, SDIInt_cat) %>%
   tally()
