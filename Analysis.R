@@ -16,10 +16,11 @@ library(RColorBrewer)
 library(RCurl) 
 library(XML)
 library(vegan)
+library(cowplot)
 
-grants<- read.csv('Grants_toTrack_0702.csv')
-pubs<- read.csv('PublicationTracker_0702.csv')
-journals <- read.csv('SubsetJournals_11Jun20.csv')
+grants<- read.csv('Grants_toTrack_0722.csv')
+pubs<- read.csv('PublicationTracker_0722.csv')
+journals <- read.csv('SubsetJournals_0722.csv')
 
 names(grants)[1] <- "Grant.Searched"
 grant_sum <- grants %>% group_by(Grant.Searched) %>% summarize(count=n())
@@ -66,6 +67,8 @@ pub_sum<- pubs %>% group_by(Journal) %>% summarize(count=n())
 rub_sum<- pubs %>% group_by(CNH.Rubric.2) %>% summarize(count=n()) 
 rub_sum_v2<- pubs %>% group_by(Interdis.Rubric.1) %>% summarize(count=n()) 
 
+pubs$X <- NULL
+pubs <- na.omit(pubs) 
 grant_ids <- unique(pubs$Grant.Number)
 grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi'=-1)
 grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi_CNH'=-1, 'sdi_interdisc'=-1)
@@ -198,7 +201,7 @@ ggplot(pubs, aes(Citations)) +
   #geom_histogram(data=filter(pubs, CNH.Rubric.2 == 2), fill = "green", alpha = 0.2) +
   geom_histogram(data=filter(pubs, CNH.Rubric.2 == 3), fill = "blue", alpha = 0.2) 
 
-#desity plot version
+#density plot version
 ggplot(pubs, aes(Citations)) +
   geom_density(data=filter(pubs, CNH.Rubric.2 == 3), colour = "#0400ff50", size = 1.5) +
   geom_density(data=filter(pubs, CNH.Rubric.2 == 2), colour = "#33ff0050", size = 1.5) +
@@ -254,73 +257,119 @@ journ.CNHS <- rquery.wordcloud(subset(journals, Gutcheck.CNHS. == "Y" | Gutcheck
 
 
 #################################################################
-#GRANTS by number of papers and dollar amount
+#GRANTS by number of papers and dollar amount - THREE PANELED FIGURE
 #################################################################
 
 grants$Number.of.Papers <- as.numeric(grants$Number.of.Papers)
+grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
 
 df <- grants %>%
   group_by(Grant.Searched) %>%
-  summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount))
+  summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount), 
+            MeanFunding = mean(Funding.Amount), MeanNumPapers = mean(Number.of.Papers))
 
 
 ## COLUMN plot
-df<-subset(df, Grant.Searched != "")
-p <- ggplot(data = df) +
-  geom_col(aes(x = Grant.Searched, y= df$count, fill = numberpaper)) 
-p <- p + theme(panel.background = element_rect(fill = 'white', colour = 'black'))
-t <- p + labs(x = "Grant Program", y ="Number of Grants" ) +
-  theme(
-    panel.background = element_rect(fill = 'white', colour = 'black'),
-    axis.text = element_text(size = 18),
-    axis.text.x = element_text(colour = "gray30", size =10),
-    axis.text.y = element_text(colour = "gray30"),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.title.x = element_text(size =20),
-    axis.title.y = element_text(size =18))+
-    scale_fill_gradientn(colours=c("navy", "yellow"))   #"cyan3", "yellow4")"green3", "grey50"  #"dodgerblue", "navy" #"darkcyan", "yellow4", "black" #"green4","olivedrab3", "darkorange1", # "red","navy", "dodgerblue" #"darkorchid4","lightskyblue4", "black"
-t
-ggsave(filename= "Figures/Grants_numberofpapers_columnchart.pdf", t, width=10, height=8)
+# df<-subset(df, Grant.Searched != "")
+# p <- ggplot(data = df) +
+#   geom_col(aes(x = Grant.Searched, y= df$count, fill = numberpaper)) 
+# p <- p + theme(panel.background = element_rect(fill = 'white', colour = 'black'))
+# t <- p + labs(x = "Grant Program", y ="Number of Grants" ) +
+#   theme(
+#     panel.background = element_rect(fill = 'white', colour = 'black'),
+#     axis.text = element_text(size = 18),
+#     axis.text.x = element_text(colour = "gray30", size =10),
+#     axis.text.y = element_text(colour = "gray30"),
+#     panel.grid.major = element_blank(),
+#     panel.grid.minor = element_blank(),
+#     axis.title.x = element_text(size =20),
+#     axis.title.y = element_text(size =18))+
+#     scale_fill_gradientn(colours=c("navy", "yellow"))   #"cyan3", "yellow4")"green3", "grey50"  #"dodgerblue", "navy" #"darkcyan", "yellow4", "black" #"green4","olivedrab3", "darkorange1", # "red","navy", "dodgerblue" #"darkorchid4","lightskyblue4", "black"
+# t
+# ggsave(filename= "Figures/Grants_numberofpapers_columnchart.pdf", t, width=10, height=8)
 
 
 df<-subset(df, Grant.Searched != "")
 p <- ggplot(data = df) +
   geom_col(aes(x = Grant.Searched, y= df$count, fill = FundingAmount)) 
 p <- p + theme(panel.background = element_rect(fill = 'white', colour = 'black'))
-t <- p + labs(x = "Grant Program", y ="Number of Grants" ) +
+main <- p + labs(x = "Grant Program", y ="Number of Grants", fill = "Funding Amount") +
   theme(
     panel.background = element_rect(fill = 'white', colour = 'black'),
     axis.text = element_text(size = 18),
-    axis.text.x = element_text(colour = "gray30", size =10),
-    axis.text.y = element_text(colour = "gray30"),
+    axis.text.x = element_text(colour = "gray30", size =8),
+    axis.text.y = element_text(colour = "gray30", size = 12),
     panel.grid.major = element_blank(),
+    legend.text = element_text(size=8),
+    legend.title = element_text(size=8),
+    legend.background = element_rect(fill = "transparent", colour = NA),
+    legend.position = c(0.9, 0.7),
     panel.grid.minor = element_blank(),
-    axis.title.x = element_text(size =20),
-    axis.title.y = element_text(size =18))+
-  scale_fill_gradientn(colours=c("navy", "yellow"))   #"cyan3", "yellow4")"green3", "grey50"  #"dodgerblue", "navy" #"darkcyan", "yellow4", "black" #"green4","olivedrab3", "darkorange1", # "red","navy", "dodgerblue" #"darkorchid4","lightskyblue4", "black"
-t
-ggsave(filename= "Figures/Grants_fundingamount_columnchart.pdf", t, width=10, height=8)
+    axis.title.x = element_text(size =15),
+    axis.title.y = element_text(size =15))+
+  scale_fill_gradientn(colours=c("navy", "yellow")) +   #"cyan3", "yellow4")"green3", "grey50"  #"dodgerblue", "navy" #"darkcyan", "yellow4", "black" #"green4","olivedrab3", "darkorange1", # "red","navy", "dodgerblue" #"darkorchid4","lightskyblue4", "black"
+  guides(fill = guide_colourbar(barwidth = 0.75, barheight = 10))
+  main
+#ggsave(filename= "Figures/Grants_fundingamount_columnchart.pdf", t, width=10, height=8)
 
-#### For a all grants 
-p <- ggplot(data = grants) +
-  geom_point(aes(x = Funding.Amount, y= log10(Number.of.Papers), colour = Grant.Searched, fill = Grant.Searched), size = 2) 
-p <- p + theme(panel.background = element_rect(fill = 'white', colour = 'black'))
-t <- p + labs(x = "Funding Amount", y ="log(Number of Papers)" ) +
-  theme(
-    panel.background = element_rect(fill = 'white', colour = 'black'),
-    axis.text = element_text(size = 18),
-    axis.text.x = element_text(colour = "gray30", size =10),
-    axis.text.y = element_text(colour = "gray30"),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.title.x = element_text(size =20),
-    axis.title.y = element_text(size =18))+
-  scale_fill_gradientn(colours=c("green3", "grey50", "dodgerblue", "navy", "darkcyan", "yellow4", "black")) #"green4","olivedrab3", "darkorange1",))   #"cyan3", "yellow4")"green3", "grey50"  #"dodgerblue", "navy" #"darkcyan", "yellow4", "black" #"green4","olivedrab3", "darkorange1", # "red","navy", "dodgerblue" #"darkorchid4","lightskyblue4", "black"
-t
-ggsave(filename= "Figures/FundingAmount_vs_Papers.pdf", t, width=10, height=8)
+### Mean papers by grant program
+p <- ggplot(data = df) +
+    geom_col(aes(x = Grant.Searched, y= log10(df$MeanNumPapers))) 
+papers <- p + labs(x = "Grant Program", y ="Log10(Mean Number of Papers per Grant)" ) +
+    
+    theme(
+      panel.background = element_rect(fill = 'white', colour = 'black'),
+      axis.text = element_text(size = 10),
+      axis.text.x = element_text(colour = "gray30", size =6),
+      axis.text.y = element_text(colour = "gray30", size =10),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.title.x = element_text(size =12),
+      axis.title.y = element_text(size =10))
+  papers
+  #ggsave(filename= "Figures/Grants_searched_barchart.pdf", t, width=10, height=8)
 
 
+  ### Mean citations by grant program
+#join grants to pubs
+Pubgrants <- left_join(pubs, grants, by= "Grant.Number")
+Pubgrants <- subset(Pubgrants, Pubgrants$Grant.Searched != "")
+Pubgrants <- subset(Pubgrants, Pubgrants$Citations != "NA")
+data <- Pubgrants %>%
+  group_by(Grant.Searched) %>%
+  summarise(count = n(), Citations = sum(Citations))
+data <- transform(data, CitationsPerPaper = (Citations/count))
+
+
+  
+  p <- ggplot(data = data) +
+    geom_col(aes(x = Grant.Searched, y= data$CitationsPerPaper)) 
+  cit <- p + labs(x = "Grant Program", y ="Mean Number of Citations per Paper" ) +
+    
+    theme(
+      panel.background = element_rect(fill = 'white', colour = 'black'),
+      axis.text = element_text(size = 10),
+      axis.text.x = element_text(colour = "gray30", size =6),
+      axis.text.y = element_text(colour = "gray30", size =10),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.title.x = element_text(size =12),
+      axis.title.y = element_text(size =10))
+  cit
+  #ggsave(filename= "Figures/Grants_searched_barchart.pdf", t, width=10, height=8)
+  
+
+## To create the combination plot
+  
+figure <- ggdraw() +
+    draw_plot(main, x = 0, y = 0, width = .65, height = 1) +
+    draw_plot(papers, x = .65, y = .5, width = .35, height = .5) +
+    draw_plot(cit, x = .65, y = 0, width = .35, height = 0.5)+
+    draw_plot_label(label = c("A", "B", "C"), size = 15,
+                    x = c(0, 0.96, 0.96), y = c(1, 0.99, 0.49))
+figure
+save_plot(filename= "Figures/ThreePanel_Bar.pdf", figure, base_width=10, base_height=8)
+### Need to figure out how to save the figure
 
 #########################################################
 ######### Data for tables ##############################
@@ -347,28 +396,3 @@ grantpubsCH <- df_grantpubs %>%
 grantpubsIN <- df_grantpubs %>%
   group_by(Grant.Searched, SDIInt_cat) %>%
   tally()
-#################################################################
-### CODE FOR MOSAIC PLOT - need different data and to figure it out!
-#################################################################
-
-PubCount <- pubs %>%
-  group_by(Rubric1_OG_check, Rubric2) %>%
-  count() 
-
-PubCount <- na.omit(PubCount)
-
-library(ggmosaic)
-
-ggplot(data = PubCount) +
-  geom_mosaic(aes(x = product(Rubric1_OG_check), weight = Rubric2, fill = n), na.rm=TRUE) +
-  labs(x="Hours of sleep a night ", title='f(SleepHrsNight)') + guides(fill=guide_legend(title = "SleepHrsNight", reverse = TRUE))
-
-df$numberpaper <- as.numeric(grants$Number.of.Papers)
-
-ggplot(data = grants) +
-  geom_mosaic(aes(weight =  Grant.Searched, x = product(Number.of.Papers), fill=factor(Number.of.Papers)), na.rm=TRUE) +
-  labs(x="Hours of sleep a night ", title='f(SleepHrsNight)') + guides(fill=guide_legend(title = "SleepHrsNight", reverse = TRUE))
-
-ggplot(data = NHANES) +
-  geom_mosaic(aes(weight = Weight, x = product(SleepHrsNight), fill=factor(SleepHrsNight)), na.rm=TRUE) +
-  labs(x="Hours of sleep a night ", title='f(SleepHrsNight)') + guides(fill=guide_legend(title = "SleepHrsNight", reverse = TRUE))
