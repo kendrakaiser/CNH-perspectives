@@ -20,7 +20,7 @@ library(cowplot)
 
 grants<- read.csv('Grants_toTrack_0722.csv')
 pubs<- read.csv('PublicationTracker_0722.csv')
-journals <- read.csv('SubsetJournals_0722.csv')
+journals <- read.csv('JournalDisciplines.csv')
 
 names(grants)[1] <- "Grant.Searched"
 grant_sum <- grants %>% group_by(Grant.Searched) %>% summarize(count=n())
@@ -65,7 +65,6 @@ pub_sum<- pubs %>% group_by(journal) %>% summarize(count=n())
 
 rub_sum<- pubs %>% group_by(CNH.Rubric.2) %>% summarize(count=n()) 
 rub_sum_v2<- pubs %>% group_by(Interdis.Rubric.1) %>% summarize(count=n()) 
-rub_sum_v3 <- pubs %>% group_by(Discipline) %>% summarize(count=n())
 
 pubs$X <- NULL
 pubs <- pubs[, -c(14:29)] 
@@ -87,8 +86,6 @@ for (i in 1:length(grant_ids)) {
 #QUITE A FEW NAs for the diversity that we need to figure out (not all 0 papers)
 
 ##### FOR SDI with publication discipline 
-journals <- journals %>%    
-  mutate(journal = tolower(journal))
 
 pubs <- pubs %>%    
   mutate(Journal = tolower(Journal))  
@@ -96,12 +93,18 @@ pubs <- pubs %>%
 #pubs <- pubs[, -c(14:29)] 
 
 pubs <- rename(pubs, "journal" = "Journal")
+journals <- rename(journals, "journal" = "Journal")
+journals <- journals %>%    
+  mutate(journal = tolower(journal))
 
 pubs<- left_join(pubs, journals, by= "journal")
 pubs<-subset(pubs, Grant.Number != "")
 pubs <- unique(pubs)
 
-levels(pubs$Discipline) <- c(levels(pubs$Discipline), "1", "2", "3", "4", "5", "6", "7", "8", "9", "10") 
+rub_sum_v3 <- pubs %>% group_by(Discipline) %>% summarize(count=n())
+
+levels(pubs$Discipline) <- c(levels(pubs$Discipline), "1", "2", "3", "4", "5", "6", "7", "8", 
+                             "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20") 
 pubs$Discipline[pubs$Discipline== ""] <- "1"
 pubs$Discipline[pubs$Discipline=="ses"] <- "2"
 pubs$Discipline[pubs$Discipline=="ecology /biology"] <- "3"
@@ -112,6 +115,16 @@ pubs$Discipline[pubs$Discipline=="geoscience"] <- "7"
 pubs$Discipline[pubs$Discipline=="oceanography"] <- "8"
 pubs$Discipline[pubs$Discipline=="hydrology"] <- "9"
 pubs$Discipline[pubs$Discipline=="social sciences"] <- "10"
+pubs$Discipline[pubs$Discipline=="health/disease"] <- "11"
+pubs$Discipline[pubs$Discipline=="ag"] <- "12"
+pubs$Discipline[pubs$Discipline=="humanities"] <- "13"
+pubs$Discipline[pubs$Discipline=="geography"] <- "14"
+pubs$Discipline[pubs$Discipline=="law"] <- "15"
+pubs$Discipline[pubs$Discipline=="marine science"] <- "16"
+pubs$Discipline[pubs$Discipline=="engineering"] <- "17"
+pubs$Discipline[pubs$Discipline=="physics"] <- "18"
+pubs$Discipline[pubs$Discipline=="remote sensing"] <- "19"
+pubs$Discipline[pubs$Discipline=="mathematics"] <- "20"
 pubs$Discipline <- as.numeric(as.character(pubs$Discipline))
 
 data_subset <- pubs[ , c("Discipline")]  
@@ -217,7 +230,7 @@ p <- ggplot(grants, aes(x=sdi_dis))+
   geom_density(data=subset(grants, grants$Grant.Searched== "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
   geom_density(data=subset(grants, grants$Grant.Searched == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
   geom_density(data=subset(grants, grants$Grant.Searched == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
-  #geom_density(data=subset(grants, grants$Grant.Searched == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
+  geom_density(data=subset(grants, grants$Grant.Searched == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
   geom_density(data=grants, colour = "black",  alpha = 0, size = 2) 
 t <- p + labs(x = "Shannon Diversity for Journal Discipline ", y ="Density of Grants" ) +
   
@@ -231,7 +244,7 @@ t <- p + labs(x = "Shannon Diversity for Journal Discipline ", y ="Density of Gr
     axis.title.x = element_text(size =20),
     axis.title.y = element_text(size =18), 
     legend.position = c(.95, .95),)+
-  xlim(0, 2.5)
+  xlim(0.5, 2.5)
 t
 ggsave(filename= "Figures/Density_Shannon_discipline_grantprogram_9.3.20.pdf", t, width=10, height=8)
 
@@ -332,7 +345,6 @@ df <- grants %>%
   group_by(Grant.Searched) %>%
   summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount), 
             MeanFunding = mean(Funding.Amount), MeanNumPapers = mean(Number.of.Papers))
-df <- t
 
 ## COLUMN plot
 # df<-subset(df, Grant.Searched != "")
@@ -379,8 +391,8 @@ main <- p + labs(x = "Grant Program", y ="Number of Grants", fill = "Funding Amo
 
 ### Mean papers by grant program
 p <- ggplot(data = df) +
-    geom_col(aes(x = Grant.Searched, y= log10(df$MeanNumPapers))) 
-papers <- p + labs(x = "Grant Program", y ="Log10(Mean Number of Papers per Grant)" ) +
+    geom_col(aes(x = Grant.Searched, y= df$MeanNumPapers)) 
+papers <- p + labs(x = "Grant Program", y ="(Mean Number of Papers per Grant)" ) +
     
     theme(
       panel.background = element_rect(fill = 'white', colour = 'black'),
@@ -390,7 +402,8 @@ papers <- p + labs(x = "Grant Program", y ="Log10(Mean Number of Papers per Gran
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       axis.title.x = element_text(size =12),
-      axis.title.y = element_text(size =10))
+      axis.title.y = element_text(size =10))+
+  ylim(0,50)
   papers
   #ggsave(filename= "Figures/Grants_searched_barchart.pdf", t, width=10, height=8)
 
