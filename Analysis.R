@@ -54,40 +54,79 @@ ggsave(filename= "Figures/Grants_searched_barchart.pdf", t, width=10, height=8)
 # this should be re-done to show as a percentage of grants in the dimensions results (with dates 2000-2015 - I orginially had done this manually, but we should probably write another script to do this and remove duplicate titles from Collaborative proposals)
 
 
-
 #################################################################
 ## Diversity Index - Shannon - Analysis 
 ##############################################################
 
 
-pubs$Journal<-as.character(pubs$Journal) 
-pubs$Journal<-char_tolower(pubs$Journal)
-pub_sum<- pubs %>% group_by(Journal) %>% summarize(count=n()) 
+pubs$Journal<-as.character(pubs$journal) 
+pubs$Journal<-char_tolower(pubs$journal)
+pub_sum<- pubs %>% group_by(journal) %>% summarize(count=n()) 
 
 rub_sum<- pubs %>% group_by(CNH.Rubric.2) %>% summarize(count=n()) 
 rub_sum_v2<- pubs %>% group_by(Interdis.Rubric.1) %>% summarize(count=n()) 
+rub_sum_v3 <- pubs %>% group_by(Discipline) %>% summarize(count=n())
 
 pubs$X <- NULL
 pubs <- pubs[, -c(14:29)] 
 pubs <- na.omit(pubs) 
-grant_ids <- unique(pubs$Grant.Number)
-grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi'=-1)
-grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi_CNH'=-1, 'sdi_interdisc'=-1)
+#grant_ids <- unique(pubs$Grant.Number)
+#grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi'=-1)
+grant_deets <- data.frame('Grant.Number'=grant_ids, 'sdi_CNH'=-1, 'sdi_interdisc'=-1, 'sdi_dis'=-1)
 
 
 for (i in 1:length(grant_ids)) {
   if (length(pubs$Publication.Year[pubs$Grant.Number == grant_ids[i]]) > 2){
     grant_deets$sdi_CNH[i] <- diversity(pubs$CNH.Rubric.2[pubs$Grant.Number == grant_ids[i]], index="shannon")
     grant_deets$sdi_interdisc[i] <- diversity(pubs$Interdis.Rubric.1[pubs$Grant.Number == grant_ids[i]], index="shannon")
+    #grant_deets$sdi_dis[i] <- diversity(pubs$Discipline[pubs$Grant.Number == grant_ids[i]], index="shannon")
   } else {grant_deets$sdi_CNH[i] <-NA
          grant_deets$sdi_interdisc[i] <-NA
   }
 }
 #QUITE A FEW NAs for the diversity that we need to figure out (not all 0 papers)
 
+##### FOR SDI with publication discipline 
+journals <- journals %>%    
+  mutate(journal = tolower(journal))
+
+pubs <- pubs %>%    
+  mutate(Journal = tolower(Journal))  
+
+#pubs <- pubs[, -c(14:29)] 
+
+pubs <- rename(pubs, "journal" = "Journal")
+
+pubs<- left_join(pubs, journals, by= "journal")
+pubs<-subset(pubs, Grant.Number != "")
+pubs <- unique(pubs)
+
+levels(pubs$Discipline) <- c(levels(pubs$Discipline), "1", "2", "3", "4", "5", "6", "7", "8", "9", "10") 
+pubs$Discipline[pubs$Discipline== ""] <- "1"
+pubs$Discipline[pubs$Discipline=="ses"] <- "2"
+pubs$Discipline[pubs$Discipline=="ecology /biology"] <- "3"
+pubs$Discipline[pubs$Discipline=="multi-disciplinary"] <- "4"
+pubs$Discipline[pubs$Discipline=="biogeochemistry"] <- "5"
+pubs$Discipline[pubs$Discipline=="atmospheric"] <- "6"
+pubs$Discipline[pubs$Discipline=="geoscience"] <- "7"
+pubs$Discipline[pubs$Discipline=="oceanography"] <- "8"
+pubs$Discipline[pubs$Discipline=="hydrology"] <- "9"
+pubs$Discipline[pubs$Discipline=="social sciences"] <- "10"
+pubs$Discipline <- as.numeric(as.character(pubs$Discipline))
+
+data_subset <- pubs[ , c("Discipline")]  
+pubs <- pubs[complete.cases(data_subset), ] 
+
+for (i in 1:length(grant_ids)) {
+  if (length(pubs$Publication.Year[pubs$Grant.Number == grant_ids[i]]) > 2){
+    grant_deets$sdi_dis[i] <- diversity(pubs$Discipline[pubs$Grant.Number == grant_ids[i]], index="shannon")
+  } else {grant_deets$sdi_dis[i] <-NA
+  }
+}
+
 
 grants<- grants %>% left_join(grant_deets)
-hist(grant_deets$sdi_CNH, plot = T, xlab = "Shannon Diversity Index of Rubric for Each Grant", main='')
+hist(grant_deets$sdi_dis, plot = T, xlab = "Shannon Diversity Index of Rubric for Each Grant", main='')
 
 #histogram for diversity
 p <- ggplot(grant_deets)+ geom_histogram(aes(x=sdi_CNH), binwidth = 0.1, fill = "navy") 
@@ -128,6 +167,7 @@ t <- p + labs(x = "Shannon Diversity for CNH ", y ="Count of Grants" ) +
 t
 ggsave(filename= "Figures/Histo_Shannon_CHN_grantprogram.pdf", t, width=10, height=8)
 
+#Figure for SDI CNH with subset programs
 p <- ggplot(grants, aes(x=sdi_CNH))+
   geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
   geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
@@ -150,6 +190,7 @@ t
 ggsave(filename= "Figures/Density_Shannon_CHN_grantprogram_7.9.20.pdf", t, width=10, height=8)
 
 
+#Figure for SDI interdiscpline with subset programs
 p <- ggplot(grants, aes(x=sdi_interdisc))+
   geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
   geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
@@ -171,12 +212,14 @@ t <- p + labs(x = "Shannon Diversity for Interdisciplinary ", y ="Density of Gra
 t
 ggsave(filename= "Figures/Density_Shannon_Interdis_grantprogram_7.9.20.pdf", t, width=10, height=8)
 
-
-#### shannon diversity by funding 
-### WHAT UNIT ARE THESE FUNDING AMOUNTS IN?
-grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
-p <- ggplot(grants)+ geom_point(aes(x = grants$Funding.Amount, y=sdi_CNH), fill = "navy", alpha = 0.5, size =3) 
-t <- p + labs(x = "Funding Amount ", y ="Shannon Diversity Index - CNH" ) +
+#Figure for SDI Journal Discpline with subset programs
+p <- ggplot(grants, aes(x=sdi_dis))+
+  geom_density(data=subset(grants, grants$Grant.Searched== "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
+  geom_density(data=subset(grants, grants$Grant.Searched == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
+  geom_density(data=subset(grants, grants$Grant.Searched == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
+  #geom_density(data=subset(grants, grants$Grant.Searched == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
+  geom_density(data=grants, colour = "black",  alpha = 0, size = 2) 
+t <- p + labs(x = "Shannon Diversity for Journal Discipline ", y ="Density of Grants" ) +
   
   theme(
     panel.background = element_rect(fill = 'white', colour = 'black'),
@@ -186,9 +229,31 @@ t <- p + labs(x = "Funding Amount ", y ="Shannon Diversity Index - CNH" ) +
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.title.x = element_text(size =20),
-    axis.title.y = element_text(size =18))
+    axis.title.y = element_text(size =18), 
+    legend.position = c(.95, .95),)+
+  xlim(0, 2.5)
 t
-ggsave(filename= "Figures/FundingAmount_Shannon_CHN.pdf", t, width=10, height=8)
+ggsave(filename= "Figures/Density_Shannon_discipline_grantprogram_9.3.20.pdf", t, width=10, height=8)
+
+
+
+#### shannon diversity by funding 
+### WHAT UNIT ARE THESE FUNDING AMOUNTS IN?
+# grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
+# p <- ggplot(grants)+ geom_point(aes(x = grants$Funding.Amount, y=sdi_CNH), fill = "navy", alpha = 0.5, size =3) 
+# t <- p + labs(x = "Funding Amount ", y ="Shannon Diversity Index - CNH" ) +
+#   
+#   theme(
+#     panel.background = element_rect(fill = 'white', colour = 'black'),
+#     axis.text = element_text(size = 18),
+#     axis.text.x = element_text(colour = "gray30"),
+#     axis.text.y = element_text(colour = "gray30"),
+#     panel.grid.major = element_blank(),
+#     panel.grid.minor = element_blank(),
+#     axis.title.x = element_text(size =20),
+#     axis.title.y = element_text(size =18))
+# t
+# ggsave(filename= "Figures/FundingAmount_Shannon_CHN.pdf", t, width=10, height=8)
 
 
 #################################################################
