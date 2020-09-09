@@ -339,12 +339,13 @@ journ.CNHS <- rquery.wordcloud(subset(journals, Gutcheck.CNHS. == "Y" | Gutcheck
 #################################################################
 
 grants$Number.of.Papers <- as.numeric(grants$Number.of.Papers)
-grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
+grants$Funding.Amount <- as.numeric(as.character(grants$Funding.Amount))
+#grants2<-subset(grants, Funding.Amount != "") 
 
 df <- grants %>%
   group_by(Grant.Searched) %>%
-  summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount), 
-            MeanFunding = mean(Funding.Amount), MeanNumPapers = mean(Number.of.Papers))
+  summarise(count = n(), FundingAmount = sum(Funding.Amount), 
+            MeanFunding = mean(Funding.Amount), MeanNumPapers = mean(Number.of.Papers..NSF.), MedNumPapers = median(Number.of.Papers..NSF.)) #numberpaper = sum(Number.of.Papers..NSF.)
 
 ## COLUMN plot
 # df<-subset(df, Grant.Searched != "")
@@ -370,7 +371,7 @@ df<-subset(df, Grant.Searched != "")
 p <- ggplot(data = df) +
   geom_col(aes(x = Grant.Searched, y= df$count, fill = FundingAmount)) 
 p <- p + theme(panel.background = element_rect(fill = 'white', colour = 'black'))
-main <- p + labs(x = "Grant Program", y ="Number of Grants", fill = "Funding Amount") +
+main <- p + labs(x = "Grant Program", y ="Number of Grants", fill = "Funding Amount (USD)") +
   theme(
     panel.background = element_rect(fill = 'white', colour = 'black'),
     axis.text = element_text(size = 18),
@@ -390,9 +391,14 @@ main <- p + labs(x = "Grant Program", y ="Number of Grants", fill = "Funding Amo
 #ggsave(filename= "Figures/Grants_fundingamount_columnchart.pdf", t, width=10, height=8)
 
 ### Mean papers by grant program
-p <- ggplot(data = df) +
-    geom_col(aes(x = Grant.Searched, y= df$MeanNumPapers)) 
-papers <- p + labs(x = "Grant Program", y ="(Mean Number of Papers per Grant)" ) +
+library(ggforce)
+
+df2<-subset(df, Grant.Searched != "ML")    
+p <- ggplot(data = df2) +
+    geom_col(aes(x = Grant.Searched, y= log10(df2$MeanNumPapers)))+
+      geom_point(data = df2, aes(x = Grant.Searched, y= log10(df2$MedNumPapers)))
+    #facet_zoom(ylim = c(0,500))
+papers <- p + labs(x = "Grant Program", y ="Logged Mean Number of Papers per Grant" ) +
     
     theme(
       panel.background = element_rect(fill = 'white', colour = 'black'),
@@ -402,10 +408,10 @@ papers <- p + labs(x = "Grant Program", y ="(Mean Number of Papers per Grant)" )
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       axis.title.x = element_text(size =12),
-      axis.title.y = element_text(size =10))+
-  ylim(0,50)
+      axis.title.y = element_text(size =10))
+  #ylim(0,500)
   papers
-  #ggsave(filename= "Figures/Grants_searched_barchart.pdf", t, width=10, height=8)
+  #ggsave(filename= "Figures/Grants_searched_numberpapers_barchart.pdf", papers, width=10, height=8)
 
 
   ### Mean citations by grant program
@@ -415,12 +421,13 @@ Pubgrants <- subset(Pubgrants, Pubgrants$Grant.Searched != "")
 Pubgrants <- subset(Pubgrants, Pubgrants$Citations != "NA")
 data <- Pubgrants %>%
   group_by(Grant.Searched) %>%
-  summarise(count = n(), Citations = sum(Citations))
+  summarise(count = n(), CitMedian = median(Citations), CitMean = mean(Citations)) #Citations = sum(Citations)
 data <- transform(data, CitationsPerPaper = (Citations/count))
 
   
   p <- ggplot(data = data) +
-    geom_col(aes(x = Grant.Searched, y= data$CitationsPerPaper)) 
+    geom_col(aes(x = Grant.Searched, y= data$CitMean))+
+    geom_point(aes(x = Grant.Searched, y= data$CitMedian))
   cit <- p + labs(x = "Grant Program", y ="Mean Number of Citations per Paper" ) +
     
     theme(
@@ -445,7 +452,7 @@ figure <- ggdraw() +
     draw_plot_label(label = c("A", "B", "C"), size = 15,
                     x = c(0, 0.96, 0.96), y = c(1, 0.99, 0.49))
 figure
-save_plot(filename= "Figures/ThreePanel_Bar.pdf", figure, base_width=10, base_height=8)
+save_plot(filename= "Figures/ThreePanel_Bar_Mean_Median.pdf", figure, base_width=10, base_height=8)
 ### Need to figure out how to save the figure
 
 #########################################################
