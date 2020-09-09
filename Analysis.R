@@ -468,9 +468,10 @@ df_grantpubs$sdi_CNH <- as.numeric(df_grantpubs$sdi_CNH)
 df_grantpubs$sdi_interdisc <- as.numeric(df_grantpubs$sdi_interdisc)
 df_grantpubs$SDICNH_cat <- cut(df_grantpubs$sdi_CNH, c(0, 1, 2, 3))
 df_grantpubs$SDIInt_cat <- cut(df_grantpubs$sdi_interdisc, c(0, 1, 2, 3))
+df_grantpubs$SDIDis_cat <- cut(df_grantpubs$sdi_dis, c(0, 1, 2, 3))
 
 #df_grantpubs[is.na(df_grantpubs)] = 0
-df_grantpubs<-subset(df_grantpubs, df_grantpubs$sdi_CNH != "NA")
+df_grantpubs<-subset(grants, grants$sdi_dis != "NA")
 
 grantpubsCH <- df_grantpubs %>%
   group_by(GrantingProgram, SDICNH_cat) %>%
@@ -479,3 +480,16 @@ grantpubsCH <- df_grantpubs %>%
 grantpubsIN <- df_grantpubs %>%
   group_by(GrantingProgram, SDIInt_cat) %>%
   tally()
+
+grantpubsDIS <- df_grantpubs %>%
+  group_by(Grant.Searched, SDIDis_cat) %>%
+  tally()
+
+
+grants$Number.of.Papers <- as.numeric(grants$Number.of.Papers)
+grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
+
+df <- grants %>%
+  group_by(GrantingProgram) %>%
+  summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount))
+
