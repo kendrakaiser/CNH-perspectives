@@ -182,10 +182,10 @@ ggsave(filename= "Figures/Histo_Shannon_CHN_grantprogram.pdf", t, width=10, heig
 
 #Figure for SDI CNH with subset programs
 p <- ggplot(grants, aes(x=sdi_CNH))+
-  geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
-  geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
-  geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
-  geom_density(data=subset(grants, grants$GrantingProgram == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
+  geom_density(data=subset(grants, grants$Grant.Searched == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
+  geom_density(data=subset(grants, grants$Grant.Searched == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
+  geom_density(data=subset(grants, grants$Grant.Searched == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
+  geom_density(data=subset(grants, grants$Grant.Searched == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
   geom_density(data=grants, colour = "black",  alpha = 0, size = 2) 
 t <- p + labs(x = "Shannon Diversity for CNH ", y ="Density of Grants" ) +
   
@@ -198,17 +198,18 @@ t <- p + labs(x = "Shannon Diversity for CNH ", y ="Density of Grants" ) +
     panel.grid.minor = element_blank(),
     axis.title.x = element_text(size =20),
     axis.title.y = element_text(size =18), 
-    legend.position = c(.95, .95),)
+    legend.position = c(.95, .95),)+
+    xlim(0, 3)
 t
-ggsave(filename= "Figures/Density_Shannon_CHN_grantprogram_7.9.20.pdf", t, width=10, height=8)
+ggsave(filename= "Figures/Density_Shannon_CHN_grantprogram_9.17.20.pdf", t, width=10, height=8)
 
 
 #Figure for SDI interdiscpline with subset programs
 p <- ggplot(grants, aes(x=sdi_interdisc))+
-  geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
-  geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
-  geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
-  geom_density(data=subset(grants, grants$GrantingProgram == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
+  geom_density(data=subset(grants, grants$Grant.Searched == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
+  geom_density(data=subset(grants, grants$Grant.Searched == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
+  geom_density(data=subset(grants, grants$Grant.Searched == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
+  geom_density(data=subset(grants, grants$Grant.Searched == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
   geom_density(data=grants, colour = "black",  alpha = 0, size = 2) 
 t <- p + labs(x = "Shannon Diversity for Interdisciplinary ", y ="Density of Grants" ) +
   
@@ -221,9 +222,10 @@ t <- p + labs(x = "Shannon Diversity for Interdisciplinary ", y ="Density of Gra
     panel.grid.minor = element_blank(),
     axis.title.x = element_text(size =20),
     axis.title.y = element_text(size =18), 
-    legend.position = c(.95, .95),)
+    legend.position = c(.95, .95),)+
+  xlim(0,3)
 t
-ggsave(filename= "Figures/Density_Shannon_Interdis_grantprogram_7.9.20.pdf", t, width=10, height=8)
+ggsave(filename= "Figures/Density_Shannon_Interdis_grantprogram_9.17.20.pdf", t, width=10, height=8)
 
 #Figure for SDI Journal Discpline with subset programs
 p <- ggplot(grants, aes(x=sdi_dis))+
