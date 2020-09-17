@@ -495,6 +495,21 @@ grantpubsDIS <- df_grantpubs %>%
   tally()
 
 
+pubs<- pubs %>% left_join(grants, by = c("Grant.Number"))
+grantpubsCH <- pubs %>%
+  group_by(Grant.Searched.x, Grant.Number, CNH.Rubric.2) %>%
+  tally()
+
+grantpubsIN <- pubs %>%
+  group_by(Grant.Searched.x, Grant.Number, Interdis.Rubric.1) %>%
+  tally()
+
+
+totalgrants <-grants %>%
+  group_by(Grant.Searched) %>%
+  tally()
+
+
 grants$Number.of.Papers <- as.numeric(grants$Number.of.Papers)
 grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
 
