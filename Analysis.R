@@ -410,8 +410,8 @@ papers <- p + labs(x = "Grant Program", y ="Logged Mean Number of Papers per Gra
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       axis.title.x = element_text(size =12),
-      axis.title.y = element_text(size =10))
-  #ylim(0,500)
+      axis.title.y = element_text(size =10))+
+  ylim(0,3)
   papers
   #ggsave(filename= "Figures/Grants_searched_numberpapers_barchart.pdf", papers, width=10, height=8)
 
@@ -454,7 +454,7 @@ figure <- ggdraw() +
     draw_plot_label(label = c("A", "B", "C"), size = 15,
                     x = c(0, 0.96, 0.96), y = c(1, 0.99, 0.49))
 figure
-save_plot(filename= "Figures/ThreePanel_Bar_Mean_Median.pdf", figure, base_width=10, base_height=8)
+save_plot(filename= "Figures/ThreePanel_Bar_Mean_Median_9.29.20.pdf", figure, base_width=10, base_height=8)
 ### Need to figure out how to save the figure
 
 #########################################################
@@ -514,6 +514,6 @@ grants$Number.of.Papers <- as.numeric(grants$Number.of.Papers)
 grants$Funding.Amount <- as.numeric(grants$Funding.Amount)
 
 df <- grants %>%
-  group_by(GrantingProgram) %>%
-  summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount))
+  group_by(Grant.Searched) %>%
+  summarise(count = n(), numberpaper = sum(Number.of.Papers), FundingAmount = sum(Funding.Amount), medianFund= median(Funding.Amount))
 
