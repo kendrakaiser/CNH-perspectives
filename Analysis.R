@@ -504,6 +504,10 @@ grantpubsIN <- pubs %>%
   group_by(Grant.Searched.x, Grant.Number, Interdis.Rubric.1) %>%
   tally()
 
+grantpubsDIS <- pubs %>%
+  group_by(Grant.Searched, Discipline) %>%
+  tally()
+
 
 totalgrants <-grants %>%
   group_by(Grant.Searched) %>%
