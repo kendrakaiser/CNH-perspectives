@@ -5,6 +5,7 @@ setwd("~/Documents/GitRepos/CNH-perspectives")
 # setwd("C:/Users/Megan/Google Drive/CNH_perspectives")
 
 library(dplyr)
+library(plyr)
 library(tidyverse)
 library(quanteda)
 library(ggplot2)
@@ -19,6 +20,10 @@ library(XML)
 library(vegan)
 
 grants<- read.csv('Grants.csv')
+colnames(grants)[which(colnames(grants)=="ï..Grant.Searched")] <- "Grant.Searched"
+## change "GEO-CHN" to "GEO-CNH"
+grants <- transform(grants,
+                    Grant.Searched=revalue(ï..Grant.Searched,c("GEO-CHN"="GEO-CNH")))
 pubs<- read.csv('Publications.csv')
 journals <- read.csv('Journals.csv')
 
