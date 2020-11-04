@@ -9,6 +9,7 @@ library(plyr)
 library(tidyverse)
 library(quanteda)
 library(ggplot2)
+library(viridis)
 #packages for word cloud
 library(tm)
 library(SnowballC)
@@ -19,22 +20,21 @@ library(XML)
 library(vegan)
 library(cowplot)
 
-<<<<<<< HEAD
-grants<- read.csv('Grants.csv')
-colnames(grants)[which(colnames(grants)=="ï..Grant.Searched")] <- "Grant.Searched"
-## change "GEO-CHN" to "GEO-CNH"
-grants <- transform(grants,
-                    Grant.Searched=revalue(ï..Grant.Searched,c("GEO-CHN"="GEO-CNH")))
-pubs<- read.csv('Publications.csv')
-journals <- read.csv('Journals.csv')
-=======
+
+#grants<- read.csv('Grants.csv')
+#pubs<- read.csv('Publications.csv')
+#journals <- read.csv('Journals.csv')
+
 grants<- read.csv('Grants_toTrack_0722.csv')
 pubs<- read.csv('PublicationTracker_0722.csv')
 journals <- read.csv('JournalDisciplines.csv')
->>>>>>> 987696ed4a12d9eb7f93176a8dc383ebccbbd8f8
+
 
 names(grants)[1] <- "Grant.Searched"
 grant_sum <- grants %>% group_by(Grant.Searched) %>% summarize(count=n())
+## change "GEO-CHN" to "GEO-CNH"
+grants <- transform(grants,
+                    Grant.Searched=revalue(Grant.Searched,c("GEO-CHN"="GEO-CNH")))
 
 
 #################################################################
@@ -70,9 +70,9 @@ ggsave(filename= "Figures/Grants_searched_barchart.pdf", t, width=10, height=8)
 ##############################################################
 
 
-pubs$Journal<-as.character(pubs$journal) 
-pubs$Journal<-char_tolower(pubs$journal)
-pub_sum<- pubs %>% group_by(journal) %>% summarize(count=n()) 
+pubs$Journal<-as.character(pubs$Journal) 
+pubs$Journal<-char_tolower(pubs$Journal)
+pub_sum<- pubs %>% group_by(Journal) %>% summarize(count=n()) 
 
 rub_sum<- pubs %>% group_by(CNH.Rubric.2) %>% summarize(count=n()) 
 rub_sum_v2<- pubs %>% group_by(Interdis.Rubric.1) %>% summarize(count=n()) 
@@ -316,6 +316,20 @@ ggplot(journals, aes(x = reorder(journal, -number.of.papers), y = number.of.pape
 # bar color = interdisciplinary
 ggplot(journals, aes(x = reorder(journal, -number.of.papers), y = number.of.papers, fill = Mission.includes.interdisciplinary.)) +
   geom_bar(stat = "identity") 
+
+
+# violin plot version - BROKEN INTO CNH vs non CNH
+CNH.citations <- dplyr::filter(left_join(pubs, grants[c("Grant.Searched","Grant.ID")], by = c("Grant.ID" = "Grant.ID")), Grant.Searched == "Hydrology" | Grant.Searched == "ES" | Grant.Searched == "BE-CNH" | Grant.Searched == "GEO-CNH")
+CNH.citations$program.group <- NA
+
+dplyr::filter(CNH.citations, is.na(CNH.Rubric.2)==F) %>% 
+  ggplot(aes(x=as.factor(CNH.Rubric.2),y = Citations, fill = Grant.Searched)) +
+  geom_violin(position="dodge", alpha=0.5) +
+  theme_bw() +
+  scale_fill_viridis(discrete=T, name="") +
+  xlab("") +
+  ylab("Citations") 
+  
   
 
 
