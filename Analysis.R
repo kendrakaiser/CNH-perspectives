@@ -94,7 +94,7 @@ for (i in 1:length(grant_ids)) {
          grant_deets$sdi_interdisc[i] <-NA
   }
 }
-#QUITE A FEW NAs for the diversity that we need to figure out (not all 0 papers)
+
 
 ##### FOR SDI with publication discipline 
 
@@ -193,10 +193,10 @@ ggsave(filename= "Figures/Histo_Shannon_CHN_grantprogram.pdf", t, width=10, heig
 
 #Figure for SDI CNH with subset programs
 p <- ggplot(grants, aes(x=sdi_CNH))+
-  geom_density(data=subset(grants, grants$Grant.Searched == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
-  geom_density(data=subset(grants, grants$Grant.Searched == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
-  geom_density(data=subset(grants, grants$Grant.Searched == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
-  geom_density(data=subset(grants, grants$Grant.Searched == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
+  geom_density(data=subset(grants, grants$GrantingProgram == "ES"), colour = "#a6cee3", fill = "yellow3", size = 2, alpha = 0, linetype = "longdash") + 
+  geom_density(data=subset(grants, grants$GrantingProgram == "BE-CNH"), colour = "#33a02c", fill = "forestgreen", alpha = 0, size = 2, linetype = "dotted")+
+  geom_density(data=subset(grants, grants$GrantingProgram == "GEO-CHN"), colour = "#b2df8a",  alpha = 0, size = 2, linetype = "dotted") +
+  geom_density(data=subset(grants, grants$GrantingProgram == "Hydrology"), colour = "#1f78b4",  alpha = 0, size = 2, linetype = "longdash") +
   geom_density(data=grants, colour = "black",  alpha = 0, size = 2) 
 t <- p + labs(x = "Shannon Diversity for CNH ", y ="Density of Grants" ) +
   
@@ -471,7 +471,7 @@ data <- transform(data, CitationsPerPaper = (Citations/count))
   
 
 ## To create the combination plot
-  
+library(cowplot)  
 figure <- ggdraw() +
     draw_plot(main, x = 0, y = 0, width = .65, height = 1) +
     draw_plot(papers, x = .65, y = .5, width = .35, height = .5) +
@@ -479,8 +479,8 @@ figure <- ggdraw() +
     draw_plot_label(label = c("A", "B", "C"), size = 15,
                     x = c(0, 0.96, 0.96), y = c(1, 0.99, 0.49))
 figure
-save_plot(filename= "Figures/ThreePanel_Bar_Mean_Median_9.29.20.pdf", figure, base_width=10, base_height=8)
-### Need to figure out how to save the figure
+save_plot(filename= "Figures/ThreePanel_Bar_Mean_Median_11.13.20.pdf", figure, base_width=10, base_height=8)
+
 
 #########################################################
 ######### Data for tables ##############################
