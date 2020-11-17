@@ -479,7 +479,7 @@ figure <- ggdraw() +
     draw_plot_label(label = c("A", "B", "C"), size = 15,
                     x = c(0, 0.96, 0.96), y = c(1, 0.99, 0.49))
 figure
-save_plot(filename= "Figures/ThreePanel_Bar_Mean_Median_11.13.20.pdf", figure, base_width=10, base_height=8)
+save_plot(filename= "Figures/ThreePanel_Bar_Mean_Median_11.13.20.pdf", figure, base_width=12, base_height=8)
 
 
 #########################################################
